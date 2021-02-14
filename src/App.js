@@ -10,6 +10,7 @@ import { Theme } from './config/themes';
 import { AuthContext } from './contexts';
 import Home from './views/Home';
 import Checkout from './views/Checkout';
+import Profile from './views/Profile';
 import MainLayout from './layouts/MainLayout';
 
 const NoMatch = () => ( 
@@ -43,6 +44,7 @@ function App() {
                         <MainLayout>
                             <Route path="/home" component={Home} />
                             <Route path="/checkout" component={Checkout} />
+                            <Route path="/profile" component={Profile} />
                             <Route path="*" component={NoMatch} />
                         </MainLayout>
                     </Switch>
