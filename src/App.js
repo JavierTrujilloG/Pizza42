@@ -9,6 +9,7 @@ import { ThemeProvider, CssBaseline } from '@material-ui/core';
 import { Theme } from './config/themes';
 import { AuthContext } from './contexts';
 import Home from './views/Home';
+import Checkout from './views/Checkout';
 
 const NoMatch = () => ( 
   <Redirect to="/login" />
@@ -32,7 +33,6 @@ function App() {
         }
     }
 
-    console.log('EEE', currentOrder);
     return (
         <ThemeProvider theme={Theme} >
             <CssBaseline />
@@ -40,6 +40,7 @@ function App() {
                 <Router>
                     <Switch>
                         <Route path="/home" component={Home} />
+                        <Route path="/checkout" component={Checkout} />
                         <Route path="*" component={NoMatch} />
                     </Switch>
                 </Router>
