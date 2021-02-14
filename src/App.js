@@ -1,22 +1,56 @@
-import React from "react";
-import { Router, Route, Switch } from "react-router-dom";
-import { Container } from "reactstrap";
+import React, { useState } from 'react';
+import {
+    HashRouter as Router,
+    Route,
+    Switch,
+    Redirect
+} from "react-router-dom";
+import { ThemeProvider, CssBaseline } from '@material-ui/core';
+import { Theme } from './config/themes';
+import { AuthContext } from './contexts';
+import Home from './views/Home';
 
-import Loading from "./components/Loading";
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
-import Home from "./views/Home";
-import Profile from "./views/Profile";
-import ExternalApi from "./views/ExternalApi";
-import { useAuth0 } from "@auth0/auth0-react";
-import history from "./utils/history";
+const NoMatch = () => ( 
+  <Redirect to="/login" />
+);
 
-// styles
-import "./App.css";
+function App() {
+    const existingOrder = JSON.parse(localStorage.getItem('currentOrder')) || [];
+    const [currentOrder, setCurrentOrder] = useState(existingOrder); // Add some logic so that current order is overwritten with order in token if current  order is null
+    /** @type {IAuthContext} */
+    const authContext = {
+        addToOrder: (id) => {
+            localStorage.setItem('currentOrder', JSON.stringify([...currentOrder, id]));
+            setCurrentOrder([...currentOrder, id]);
+        },
+        removeFromOrder: (id) => {
+            // Inmutability!
+            const tempArr = [...currentOrder];
+            tempArr.pop(id);
+            localStorage.setItem('currentOrder', JSON.stringify(tempArr));
+            setCurrentOrder(tempArr);
+        }
+    }
 
-// fontawesome
-import initFontAwesome from "./utils/initFontAwesome";
-initFontAwesome();
+    console.log('EEE', currentOrder);
+    return (
+        <ThemeProvider theme={Theme} >
+            <CssBaseline />
+            <AuthContext.Provider value={{ currentOrder, ...authContext }}>
+                <Router>
+                    <Switch>
+                        <Route path="/home" component={Home} />
+                        <Route path="*" component={NoMatch} />
+                    </Switch>
+                </Router>
+            </AuthContext.Provider>
+        </ThemeProvider>
+    );
+}
+
+export default App;
+/*
+
 
 const App = () => {
   const { isLoading, error } = useAuth0();
@@ -47,3 +81,4 @@ const App = () => {
 };
 
 export default App;
+*/
