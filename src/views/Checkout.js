@@ -10,8 +10,14 @@ import {
     Paper,
     Step,
     StepLabel,
-    Grid
+    Grid,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@material-ui/core';
+import { useAuth0 } from "@auth0/auth0-react";
+
 import { makeStyles } from '@material-ui/core/styles';
 import { AuthContext } from '../contexts';
 import { PizzaService } from '../services';
@@ -56,10 +62,11 @@ const useStyles = makeStyles((theme) => ({
 
 
 // TODO add preferences: Extra cheesy, Big groot, Cutted
-const CustomerDetailsForm = (user) => {
+const CustomerDetailsForm = ({ user }) => {
     const STYLES = AppStyles();
     const [email, setEmail] = useState(user.email); // TODO this wil probably need to go up
     const [address, setAddress] = useState(user.address);
+    console.log('EEE', user);
     return (
         <>
             <InputLabel htmlFor="email" className={[STYLES.textWhite]}>Email</InputLabel>
@@ -94,14 +101,14 @@ const CustomerDetailsForm = (user) => {
 };
 
 // Same as create account
-const LoginBox = (loginWithRedirect) => {
+const LoginBox = ({ loginWithRedirect }) => {
     const classes = useStyles();
     return (
         <>
             <Button
                 variant="contained"
                 color="primary"
-                onClick={loginWithRedirect}
+                onClick={() => loginWithRedirect()}
                 className={classes.button}
             >
                 Login
@@ -116,33 +123,72 @@ export default function Checkout({location, match }) {
     const classes = useStyles();
     const STYLES = AppStyles();
     const [activeStep, setActiveStep] = useState(0);
+    const [showVerifyModal, setShowVerifyModal] = useState(false);
+    const [APIerror, setAPIError] = useState(null);
     const { currentOrder, setCurrentOrder } = useContext(AuthContext);
-    
-    const { authToken, signIn } = useContext(AuthContext);
-        /*
+
+    const consentRequired = APIerror === "consent_required";
+    const consentAndLoginRequired = APIerror === "login_required";
+
     const {
         user,
         isAuthenticated,
         loginWithRedirect,
-        logout,
+        getAccessTokenSilently,
+        loginWithPopup,
+        getAccessTokenWithPopup
     } = useAuth0();
-    */
+
+    console.log(isAuthenticated, user);
     const emailVerified = true;
-    const isAuthenticated = true;
-    const user = {};
-    const loginWithRedirect = () => {};
+
+    const resendVerificationEmail = async () => {
+        // This will only be need for users logged via Database connection
+        // TODO await PizzaService.resendEmail(currentOrder, token);
+    };
+    
+    const createOrder = async () => {
+        let res = true;
+        try {
+            const token = await getAccessTokenSilently();
+            await PizzaService.createOrder(currentOrder, token);
+        } catch(error) {
+            setAPIError(error.error);
+        }
+        return res;
+    }
+
+    const handleConsent = async () => {
+        try {
+            await getAccessTokenWithPopup();
+            setAPIError(null);
+        } catch (error) {
+            setAPIError(error.error);
+        }
+    };
+
+    const handleLoginAgain = async () => {
+        try {
+            await loginWithPopup();
+            setAPIError(null);
+        } catch (error) {
+            setAPIError(error.error);
+        }
+    };
 
     const goNextStep = async () => {
         if(activeStep === 1) {
+            // TODO Check both fields are entered
+            
+
             // Before proceeding to create order we need to double check we have the appropiate access token
             if (!isAuthenticated) {
                 // Unlikely this occurs
-                
+                await loginWithRedirect();
             }
-            if (!emailVerified) {
-                alert(`Almost there! Before you place your order, please verify your email address.
-                If you don't find your verification email we can resend it to you.
-                `) // TODO change for modal with "Please, resend" or "OK"
+            if (!user.email_verified) {
+                setShowVerifyModal(true);
+                return;
             }
             // Progressive Profiling: check if we can enrich user profile with new infor
             // If user.address !== newAddress ...
@@ -153,11 +199,12 @@ export default function Checkout({location, match }) {
               } = useAuth0();
               */
             const token = 'dummy';//await getAccessTokenSilently();
-            try {
-                await PizzaService.createOrder(currentOrder, token);
-            } catch(err){
-                console.log(err);
+            
+            const res = await createOrder();
+            if (!res) {
+                return;
             }
+            
         }
         setActiveStep(activeStep + 1);
     };
@@ -185,9 +232,9 @@ export default function Checkout({location, match }) {
                         <Grid container spacing={3}>
                             <Grid item xs={12} sm={6}>
                                 {isAuthenticated ?
-                                    <CustomerDetailsForm/>
+                                    <CustomerDetailsForm user={user}/>
                                     :
-                                    <LoginBox loginWithRedirect/>
+                                    <LoginBox loginWithRedirect={loginWithRedirect}/>
                                 }
                             </Grid>
                         </Grid>
@@ -230,7 +277,7 @@ export default function Checkout({location, match }) {
                         {activeStep === steps.length - 1 ? (
                             <>
                                 <Button>
-                                    Thanks
+                                    Thanks!
                                 </Button>
                             </>
 
@@ -252,7 +299,7 @@ export default function Checkout({location, match }) {
                                         onClick={goNextStep}
                                         className={classes.button}
                                     >
-                                        {activeStep === steps.length - 1 ? 'Crear KYC' : 'Siguiente'}
+                                        {activeStep === steps.length - 1 ? 'Thanks' : 'Next'}
                                     </Button>
                                 </div>
                             </>
@@ -260,6 +307,46 @@ export default function Checkout({location, match }) {
                         }
                     </>
                 </Paper>
+                {/* EMAIL VERIFICATION DIALOG */}
+                <Dialog open={showVerifyModal} onClose={() => setShowVerifyModal(false)}>
+                    <DialogTitle>Email verification required</DialogTitle>
+                    <DialogContent>
+                        <>
+                            <Typography>Almost there! We kindly ask you to verify your email address before you can order your pizzas. </Typography>
+                            <Typography>If you don't find the verification email we can resend it to you </Typography>
+                        </>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={resendVerificationEmail}>Please resend</Button>
+                        <Button color="primary" onClick={() => setShowVerifyModal(false)}>
+                            I got it
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                {/* CONSENT DIALOG */}
+                <Dialog open={consentRequired} onClose={() => setAPIError(null)}>
+                    <DialogTitle>Consent required</DialogTitle>
+                    <DialogContent>
+                        <>
+                            <Typography> You need to consent access to access the order API</Typography>
+                        </>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleConsent}>OK</Button>
+                    </DialogActions>
+                </Dialog>
+                {/* CONSENT AND LOGIN DIALOG */}
+                <Dialog open={consentAndLoginRequired} onClose={() => setAPIError(null)}>
+                    <DialogTitle>Consent & Login required</DialogTitle>
+                    <DialogContent>
+                        <>
+                            <Typography> You need to login and consent access to access the order API</Typography>
+                        </>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleLoginAgain}>OK</Button>
+                    </DialogActions>
+                </Dialog>
             </main>
         </>
     );

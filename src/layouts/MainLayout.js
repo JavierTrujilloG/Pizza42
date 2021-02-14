@@ -17,7 +17,8 @@ import {
 import { useHistory } from "react-router-dom";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { useAuth0 } from "@auth0/auth0-react";
-import PeopleIcon from '@material-ui/icons/People';
+import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { makeStyles } from '@material-ui/core/styles';
 import { Logo } from '../components';
 import { AppStyles, ThemeColors } from '../config/themes';
@@ -27,7 +28,8 @@ const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
-        backgroundColor: '#F7F7F7'
+        //backgroundColor: '#F7F7F7'
+        backgroundImage: `url('/images/bg_pizzeria.jpg')`
     },
     toolbar: {
         paddingRight: 24, // keep right padding when drawer closed
@@ -96,6 +98,7 @@ export default function PrivateLayout({ children }) {
         loginWithRedirect,
         logout,
     } = useAuth0();
+    console.log(user, isAuthenticated);
     const history = useHistory();
 
     return (
@@ -108,11 +111,27 @@ export default function PrivateLayout({ children }) {
                         <Typography variant="h6" className={[STYLES.textPrimary]}>Pizza 42</Typography>
                         </Box>
                     </Box>
-                    <Tooltip title="Log Out" aria-label="log out">
-                        <IconButton color="inherit" onClick={logout} className={[STYLES.iconButtonWhiteFill]}>
-                            <ExitToAppIcon />
-                        </IconButton>
-                    </Tooltip>
+
+                    {isAuthenticated ?
+                        <>
+                            <Tooltip title="My Account" aria-label="my accounnt">
+                                <IconButton color="inherit" onClick={() => history.push('/profile')} className={[STYLES.iconButtonWhiteFill]}>
+                                    <AccountCircleIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Log Out" aria-label="log out">
+                                <IconButton color="inherit" onClick={logout} className={[STYLES.iconButtonWhiteFill]}>
+                                    <ExitToAppIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </>
+                    :
+                    <Tooltip title="Sign in" aria-label="log out">
+                            <IconButton color="inherit" onClick={loginWithRedirect} className={[STYLES.iconButtonWhiteFill]}>
+                                <VpnKeyIcon />
+                            </IconButton>
+                        </Tooltip>
+                    }
                 </Toolbar>
             </AppBar>
             <main className={classes.content}>

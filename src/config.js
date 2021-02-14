@@ -17,6 +17,5 @@ export function getConfig() {
     domain: configJson.domain,
     clientId: configJson.clientId,
     ...(audience ? { audience } : null),
-      API: 'dummy'//replace according to env
   };
 }

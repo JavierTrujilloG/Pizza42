@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import { Redirect } from "react-router-dom";
 import {
     Typography,
     Container,
@@ -16,8 +17,9 @@ import {
     ListItem,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
-import _ from 'lodash';
+import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
 import { PizzaService } from '../services';
+import { CustomBreadCrumb } from '../components';
 import { AppStyles, ThemeColors } from '../config/themes';
 
 const useStyles = makeStyles((theme) => ({
@@ -69,26 +71,19 @@ const a11yProps = (index) => {
 
 // --------------------------------------------------------------------
 // MAIN COMPONENT
-export default function Profile({location, match, history }) {
+const Profile = ({location, match, history }) => {
     const STYLES = AppStyles();
     const classes = useStyles();
-    //const { user } = useAuth0();
-    const user = {};
-    // TODO save infor
+    const { user, getAccessTokenSilently   } = useAuth0();
     const [currentTab, setCurrentTab] = useState(0);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
     };
     const orders = [{
         id: 'PIZZA4', date: new Date(), items: ['javarita']
-    }];
+    }]; // TODO
 
     const updateProfileInfo = async () => {
-        /*
-        const {
-            getAccessTokenSilently
-          } = useAuth0();
-          */
         const token = 'dummy';//await getAccessTokenSilently();
         try {
             await PizzaService.updateProfile({}, token); // TODO remove
@@ -96,6 +91,9 @@ export default function Profile({location, match, history }) {
             console.log(err);
         }
     }
+
+    // TODO potential account linking based on identities > 2
+
     
     const renderOrders = () => {
         if (!orders || orders.length < 0) {
@@ -123,6 +121,9 @@ export default function Profile({location, match, history }) {
         <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
                 <Grid item xs={12}>
+                    <CustomBreadCrumb id="Profile"/>
+                </Grid>
+                <Grid item xs={12}>
                     <Box className={classes.root} display="flex" flexDirection="column" flexGrow={1} className={STYLES.primaryGradientLightBg}>
                         <Box pl={4} pr={3} py={1.2} display="flex" justifyContent="space-between" alignItems="center" className={STYLES.primaryGradientLightBg}>
                             <Typography variant="h4" className={STYLES.textWhite}>
@@ -149,7 +150,20 @@ export default function Profile({location, match, history }) {
                                                     src={user.picture}
                                                     alt="Profile"
                                                 />
+
+                                                {user.email_verified ?
+                                                <Typography>
+                                                    Email verified
+
+                                                </Typography>
+                                                        :
+                                                <Typography>
+                                                    Email to be verified
+
+                                                </Typography>
+                                                        }
                                             <List dense>
+                                                
                                                 <ListItem>
                                                     <ListItemText
                                                         primary={'Name'}
@@ -214,8 +228,8 @@ export default function Profile({location, match, history }) {
     );
 }
 
-/* TODO
-export default withAuthenticationRequired(ProfileComponent, {
-    onRedirecting: () => <Loading />,
-  });
-  */
+
+export default withAuthenticationRequired(Profile, {
+    onRedirecting: () => <Redirect to="/home" />,
+});
+

@@ -1,6 +1,8 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
+    Grid,
+    Container,
     Button, 
     MenuItem,
     Paper,
@@ -13,6 +15,10 @@ import logo from "../assets/logo.svg";
 // --------------------------------------------------------------------
 // STYLES: makeStyles must be outside of functional component
 const useStyles = makeStyles((theme) => ({
+    container: {
+        paddingTop: theme.spacing(4),
+        paddingBottom: theme.spacing(4),
+    },
     layout: {
         width: 'auto',
         marginLeft: theme.spacing(2),
@@ -45,33 +51,39 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(3),
         marginLeft: theme.spacing(1),
     },
+    pizzaImage: {
+        height: '100%',
+        width: '100%',
+        objectFit: 'contain'
+    }
 }));
 
 
+// TODO add this to a context
 const pizzas = [
     {
-        id: 'pythonchuto',
-        name: 'Pythonchuto',
-        description: 'For the adventurous, strongly typed prochuto pizza with',
-        image: ''
+        id: 'pythonciutto',
+        name: 'Pythonciutto',
+        description: 'For the adventurous, strongly typed Prosciutto pizza with',
+        image: '/images/pizza-prosciutto.jpg'
     },
     {
         id: 'javarita',
         name: 'Javarita',
         description: 'Not a simple margarita strongly cheese typed cdjsc jdsn',
-        image: ''
+        image: '/images/pizza-margherita.jpg'
     },
     {
         id: 'c++bonara',
         name: 'C++bonara',
         description: 'For the classic, strongly cheese typedcshdbsbd  cjsdhs ',
-        image: ''
+        image: '/images/pizza-carbonara.jpg'
     },
     {
         id: 'diavolajs',
         name: 'DiavolaJS',
         description: 'For the adventurous and curious, a diavola',
-        image: ''
+        image: '/images/pizza-diavola.jpg'
     }
 ];
 
@@ -88,7 +100,9 @@ const PizzaList = () => {
                 <Typography component="h1" variant="h4" align="center">
                 { pizza.name }
                 </Typography>
-                <img src={logo} />
+                <div style={{ maxHeight: '200px' }}>
+                    <img className={classes.pizzaImage} src={pizza.image} />
+                </div>
                 <Typography > {pizza.description} </Typography>
                 <Button
                     variant="contained"
@@ -127,24 +141,32 @@ export default function Home({location, match, history }) {
     
     return (
         <>
-            <main className={classes.layout}>
+            <Container maxWidth="lg" className={classes.container}>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+
+                    </Grid>
+
                     <Typography component="h1" variant="h4" align="center">
                         Pizzeria
                     </Typography>
-                    <PizzaList/>
+                    <Grid item xs={12}>
+                        <PizzaList/>
 
-                    {currentOrder && currentOrder.length > 0 &&
+                        {currentOrder && currentOrder.length > 0 &&
 
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {history.push('/checkout/')}}
-                        className={classes.button}
-                        >
-                        Checkout
-                    </Button>
-                    }
-            </main>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {history.push('/checkout/')}}
+                                className={classes.button}
+                            >
+                                Checkout
+                            </Button>
+                        }
+                    </Grid>
+                </Grid>
+            </Container>
         </>
     );
 }

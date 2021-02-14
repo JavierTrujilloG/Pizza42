@@ -19,7 +19,7 @@ const NoMatch = () => (
 
 function App() {
     const existingOrder = JSON.parse(localStorage.getItem('currentOrder')) || [];
-    const [currentOrder, setCurrentOrder] = useState(existingOrder); // Add some logic so that current order is overwritten with order in token if current  order is null
+    const [currentOrder, setCurrentOrder] = useState(existingOrder); // TODO Add some logic so that current order is overwritten with order in token if current  order is null
     /** @type {IAuthContext} */
     const authContext = {
         addToOrder: (id) => {
@@ -29,7 +29,7 @@ function App() {
         removeFromOrder: (id) => {
             // Inmutability!
             const tempArr = [...currentOrder];
-            tempArr.pop(id);
+            tempArr.pop(id); // TODO not working
             localStorage.setItem('currentOrder', JSON.stringify(tempArr));
             setCurrentOrder(tempArr);
         }
