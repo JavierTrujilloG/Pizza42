@@ -2,5 +2,6 @@
 node_modules
 .env
 **/auth0-variables.js
+**/auth0_config.json
 npm-debug.log
 .editorconfig
