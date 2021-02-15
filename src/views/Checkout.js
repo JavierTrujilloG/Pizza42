@@ -21,7 +21,10 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { makeStyles } from '@material-ui/core/styles';
 import { AuthContext } from '../contexts';
 import { PizzaService } from '../services';
+import { CustomBreadCrumb } from '../components';
 import { AppStyles } from '../config/themes';
+import { getConfig } from "../config.js";
+const config = getConfig();
 
 
 // import { useAuth0 } from "@auth0/auth0-react"; 
@@ -146,11 +149,14 @@ export default function Checkout({location, match }) {
         // This will only be need for users logged via Database connection
         // TODO await PizzaService.resendEmail(currentOrder, token);
     };
-    
+    const accessTokenOptions = {
+                audience: config.audience,
+                scope: 'create:order',
+            };
     const createOrder = async () => {
         let res = true;
         try {
-            const token = await getAccessTokenSilently();
+            const token = await getAccessTokenSilently(accessTokenOptions);
             await PizzaService.createOrder(currentOrder, token);
         } catch(error) {
             setAPIError(error.error);
@@ -160,7 +166,7 @@ export default function Checkout({location, match }) {
 
     const handleConsent = async () => {
         try {
-            await getAccessTokenWithPopup();
+            await getAccessTokenWithPopup(accessTokenOptions);
             setAPIError(null);
         } catch (error) {
             setAPIError(error.error);
@@ -262,6 +268,7 @@ export default function Checkout({location, match }) {
     return (
         <>
             <main className={classes.layout}>
+                <CustomBreadCrumb id="Profile"/>
                 <Paper className={classes.paper}>
                     <Typography component="h1" variant="h4" align="center">
                         Checkout

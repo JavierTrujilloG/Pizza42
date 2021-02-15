@@ -11,7 +11,7 @@ const onRedirectCallback = (appState) => {
   history.push(
     appState && appState.returnTo ? appState.returnTo : window.location.pathname
   );
-};
+}; // TODO modify
 
 // Please see https://auth0.github.io/auth0-react/interfaces/auth0provideroptions.html
 // for a full list of the available properties on the provider
@@ -20,7 +20,8 @@ const config = getConfig();
 const providerConfig = {
   domain: config.domain,
   clientId: config.clientId,
-  ...(config.audience ? { audience: config.audience } : null),
+    ...(config.audience ? { audience: config.audience } : null),
+  scope: config.scope,
   redirectUri: window.location.origin,
   onRedirectCallback,
 };
