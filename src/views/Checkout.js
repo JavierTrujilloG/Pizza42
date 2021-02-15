@@ -207,6 +207,8 @@ export default function Checkout({location, match }) {
             const token = 'dummy';//await getAccessTokenSilently();
             
             const res = await createOrder();
+            // TODO
+            return;
             if (!res) {
                 return;
             }
