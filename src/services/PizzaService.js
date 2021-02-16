@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 import { getConfig } from "../config.js";
-const { apiOrigin = "http://localhost:3001", audience } = getConfig(); // TODO
 
 /**
  * @class
@@ -18,7 +17,7 @@ export default class PizzaService {
         try {
             const response = await axios({
                 method: 'POST',
-                url: `${apiOrigin}/api/order`,
+                url: `${window.location.origin}/api/order`,
                 headers: {
                     'content-type': 'application/json',
                     'authorization': `Bearer ${authToken}`

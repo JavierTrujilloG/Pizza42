@@ -5,11 +5,10 @@ const helmet = require("helmet");
 const jwt = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
 const jwtAuthz = require('express-jwt-authz');
+const { join } = require("path");
 const ManagementClient = require('auth0').ManagementClient;
 
 require('dotenv').config();
-
-console.log(process.env);
 
 const { createId } = require("./src/utils/RandomGenerator");
 const authConfig = require("./src/auth_config.json");
@@ -43,6 +42,7 @@ const auth0 = new ManagementClient({
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(cors({ origin: appOrigin }));
+app.use(express.static(join(__dirname, "build")));
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
@@ -67,7 +67,6 @@ app.post("/api/order", checkJwt, jwtAuthz(['create:order']), async (req, res) =>
         // User metadata is not included in token, request full user from Management API
         const fullUser = await auth0.getUser({ id: user.sub });
 
-        console.log(fullUser);
         // Create random order string
         const id = `PIZZA44-${createId(7)}`;
 

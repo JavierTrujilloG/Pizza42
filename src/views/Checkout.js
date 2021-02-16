@@ -126,7 +126,7 @@ const steps = ['Order details', 'Customer Information', 'Order Completed!'];
 export default function Checkout({location, match }) {
     const classes = useStyles();
     const STYLES = AppStyles();
-    const [activeStep, setActiveStep] = useState(2);
+    const [activeStep, setActiveStep] = useState(0);
     const [showVerifyModal, setShowVerifyModal] = useState(false);
     const [newOrderId, setNewOrderId] = useState(null);
     const [APIerror, setAPIError] = useState(null);
