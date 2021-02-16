@@ -15,12 +15,19 @@ import {
     Button,
     List, 
     ListItem,
+    IconButton,
+    Link,
+    Tooltip
 } from '@material-ui/core';
+import HomeIcon from '@material-ui/icons/Home';
+import { useHistory } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
 import { PizzaService } from '../services';
 import { CustomBreadCrumb } from '../components';
 import { AppStyles, ThemeColors } from '../config/themes';
+import { getConfig } from "../config.js";
+const config = getConfig();
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -29,6 +36,14 @@ const useStyles = makeStyles((theme) => ({
     container: {
         paddingTop: theme.spacing(4),
         paddingBottom: theme.spacing(4),
+        width: 'auto',
+        marginLeft: theme.spacing(2),
+        marginRight: theme.spacing(2),
+        [theme.breakpoints.up(600 + theme.spacing(2) * 2)]: {
+            width: 600,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+        }
     },
     tabPanel: {
         backgroundColor: ThemeColors.softGrey,
@@ -71,18 +86,20 @@ const a11yProps = (index) => {
 
 // --------------------------------------------------------------------
 // MAIN COMPONENT
-const Profile = ({location, match, history }) => {
+const Profile = ({location, match }) => {
     const STYLES = AppStyles();
     const classes = useStyles();
-    const { user, getAccessTokenSilently   } = useAuth0();
+    const { user, getAccessTokenSilently } = useAuth0();
+    const history = useHistory();
+    console.log(user);
     const [currentTab, setCurrentTab] = useState(0);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
     };
-    const orders = [{
-        id: 'PIZZA4', date: new Date(), items: ['javarita']
-    }]; // TODO
 
+    const orders = user[config['custom_claim']];
+
+    /*
     const updateProfileInfo = async () => {
         const token = 'dummy';//await getAccessTokenSilently();
         try {
@@ -91,9 +108,7 @@ const Profile = ({location, match, history }) => {
             console.log(err);
         }
     }
-
-    // TODO potential account linking based on identities > 2
-
+    */
     
     const renderOrders = () => {
         if (!orders || orders.length < 0) {
@@ -107,7 +122,7 @@ const Profile = ({location, match, history }) => {
             <List>
                 {orders.map((order) => (
                     <ListItem divider inset>
-                        {order.id}
+                        {order}
                     </ListItem>
                 ))
                 }
@@ -115,13 +130,12 @@ const Profile = ({location, match, history }) => {
         );
     };
 
-    // TODO add authentication
     return (
         <>
         <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
                 <Grid item xs={12}>
-                    <CustomBreadCrumb id="Profile"/>
+                    
                 </Grid>
                 <Grid item xs={12}>
                     <Box className={classes.root} display="flex" flexDirection="column" flexGrow={1} className={STYLES.primaryGradientLightBg}>
@@ -129,6 +143,11 @@ const Profile = ({location, match, history }) => {
                             <Typography variant="h4" className={STYLES.textWhite}>
                                 Your profile
                             </Typography>
+                            <Tooltip title="Home" aria-label="home">
+                                <IconButton color="inherit" onClick={() => history.push('/profile')} className={[STYLES.iconButtonWhiteFill]}>
+                                    <HomeIcon />
+                                </IconButton>
+                            </Tooltip>
                         </Box>
                         <Paper square elevation={2} style={{zIndex: 1}}>
                             <Tabs
@@ -146,69 +165,31 @@ const Profile = ({location, match, history }) => {
                             <Box display="flex" flexGrow={1} flexDirection="column">
                                     <>
                                         <Box px={4} py={2} style={{backgroundColor: 'white'}}>
-                                            <img
-                                                    src={user.picture}
-                                                    alt="Profile"
-                                                />
-
-                                                {user.email_verified ?
-                                                <Typography>
-                                                    Email verified
-
-                                                </Typography>
-                                                        :
-                                                <Typography>
-                                                    Email to be verified
-
-                                                </Typography>
-                                                        }
-                                            <List dense>
-                                                
-                                                <ListItem>
-                                                    <ListItemText
-                                                        primary={'Name'}
+                                            <Grid container spacing={3}>
+                                                <Grid item xs={4}>
+                                                    <img
+                                                        src={user.picture}
+                                                        alt="Profile"
                                                     />
-                                                    <InputLabel htmlFor="address" className={[STYLES.textWhite]}>Address</InputLabel>
-            <TextField
-                value={'sss'}
-                onInput={(e) => {}}
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="user-address"
-                name="address"
-                autoComplete="address"
-                autoFocus
-            />
-            <ListItemText
-                                                        primary={'Name'}
-                                                    />
-                                                    <InputLabel htmlFor="address" className={[STYLES.textWhite]}>Address</InputLabel>
-            <TextField
-                value={'sss'}
-                onInput={(e) => {}}
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="user-address"
-                name="address"
-                autoComplete="address"
-                autoFocus
-            />
-                                                </ListItem>
-                                            </List>
+                                                </Grid>
+                                                <Grid item xs={8}>
+                                                    <Grid container>
+                                                        <Grid item xs={12}>
+                                                            <Typography style={{ marginBottom: '5px' }}>
+                                                                {user.name}
+                                                            </Typography>
+                                                            <Typography>
+                                                                <Link href={`mailto:${user.email}`}>
+                                                                    {user.email}
+                                                                </Link>
+                                                            </Typography>
+                                                    </Grid>
+                                                    </Grid>
+
+                                                </Grid>
+                                        </Grid>
                                         </Box>
                                     </>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={updateProfileInfo}
-                                        className={classes.button}
-                                    >
-                                        Save
-                                    </Button>
                             </Box>
                         </TabPanel>
                         <TabPanel value={currentTab} index={1}>

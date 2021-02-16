@@ -17,6 +17,7 @@ export function getConfig() {
     domain: configJson.domain,
     clientId: configJson.clientId,
       ...(audience ? { audience } : null),
-    scope: "create:order"
+      scope: "create:order",
+      custom_claim: configJson.custom_claim
   };
 }
