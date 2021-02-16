@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { getConfig } from "../config.js";
-const { apiOrigin = "http://localhost:3001", audience } = getConfig();
+const { apiOrigin = "http://localhost:3001", audience } = getConfig(); // TODO
 
 /**
  * @class

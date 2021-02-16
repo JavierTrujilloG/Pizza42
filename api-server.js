@@ -7,6 +7,7 @@ const jwksRsa = require("jwks-rsa");
 const jwtAuthz = require('express-jwt-authz');
 const ManagementClient = require('auth0').ManagementClient;
 
+const { createId } = require("./src/utils/RandomGenerator");
 const authConfig = require("./src/auth_config.json");
 
 const app = express();
@@ -33,7 +34,6 @@ const auth0 = new ManagementClient({
   domain: authConfig.domain,
   clientId: authConfig.backend_clientId,
   clientSecret: authConfig.backend_clientSecret,
-    // scope: authConfig.backend_scope
 });
 
 app.use(morgan("dev"));
@@ -53,27 +53,36 @@ const checkJwt = jwt({
   algorithms: ["RS256"],
 });
 
-console.log(authConfig.audience, `https://${authConfig.domain}/`);
 
-app.post("/api/order", checkJwt, jwtAuthz(['create:order']), (req, res) => {
-    // TODO create order and update user_metadata
-    res.json({
-        success: true
-    });
-});
+/*
+ * https://auth0.github.io/node-auth0/module-management.ManagementClient.html#updateUser
+ */
+app.post("/api/order", checkJwt, jwtAuthz(['create:order']), async (req, res) => {
+    try {
+        const { user } = req;
+        // User metadata is not included in token, request full user from Management API
+        const fullUser = await auth0.getUser({ id: user.sub });
 
-app.get("/resendEmail", checkJwt, (req, res) => {
-    const params =  {};
+        console.log(fullUser);
+        // Create random order string
+        const id = `PIZZA44-${createId(7)}`;
 
-    // TODO replace with  actual  function to resend email
-    auth0.getUsers(params, function (err, users) {
-        console.log(users.length);
+        // Add id to existing orders array if any
+        const orders = fullUser.user_metadata.orders || [];
+        orders.push(id);
+
+        // Update user_metada with new order history
+        await auth0.updateUserMetadata({ id: user.sub }, { orders });
         res.json({
             success: true,
-            users: users.length
+            orderId: id
         });
-    });
-
+    } catch (err) {
+        res.json({
+            success: false,
+            error: err.message
+        });
+    }
 });
 
 app.listen(port, () => console.log(`API Server listening on port ${port}`));

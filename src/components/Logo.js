@@ -7,7 +7,7 @@ const LogoContent = (props) => {
    return (
       <img
          {...rest}
-         src={`TODO`}
+         src={`/images/pizza42_logo_white.png`}
          alt="logo"
          width={(width || 100) + 'px'}
       />
@@ -20,7 +20,7 @@ const Logo = (props) => {
    return (
       <>
          {linkToHome ? (
-            <Link to="/">
+            <Link to="/home">
                <LogoContent {...props} />
             </Link>
          ) : (

@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { ThemeProvider, CssBaseline } from '@material-ui/core';
 import { Theme } from './config/themes';
-import { AuthContext } from './contexts';
+import { OrderContext } from './contexts';
 import Home from './views/Home';
 import Checkout from './views/Checkout';
 import Profile from './views/Profile';
@@ -20,8 +20,8 @@ const NoMatch = () => (
 function App() {
     const existingOrder = JSON.parse(localStorage.getItem('currentOrder')) || [];
     const [currentOrder, setCurrentOrder] = useState(existingOrder); // TODO Add some logic so that current order is overwritten with order in token if current  order is null
-    /** @type {IAuthContext} */
-    const authContext = {
+    /** @type {IOrderContext} */
+    const orderContext = {
         addToOrder: (id) => {
             localStorage.setItem('currentOrder', JSON.stringify([...currentOrder, id]));
             setCurrentOrder([...currentOrder, id]);
@@ -29,16 +29,23 @@ function App() {
         removeFromOrder: (id) => {
             // Inmutability!
             const tempArr = [...currentOrder];
-            tempArr.pop(id); // TODO not working
+            const index = tempArr.indexOf(id);
+            if (index > -1) {
+                tempArr.splice(index, 1);
+            }
             localStorage.setItem('currentOrder', JSON.stringify(tempArr));
             setCurrentOrder(tempArr);
+        },
+        resetCurrenOrder: (newOrder) => {
+            localStorage.setItem('currentOrder', JSON.stringify(newOrder));
+            setCurrentOrder(newOrder);
         }
     }
 
     return (
         <ThemeProvider theme={Theme} >
             <CssBaseline />
-            <AuthContext.Provider value={{ currentOrder, ...authContext }}>
+            <OrderContext.Provider value={{ currentOrder, ...orderContext }}>
                 <Router>
                     <Switch>
                         <MainLayout>
@@ -49,7 +56,7 @@ function App() {
                         </MainLayout>
                     </Switch>
                 </Router>
-            </AuthContext.Provider>
+            </OrderContext.Provider>
         </ThemeProvider>
     );
 }

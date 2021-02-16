@@ -81,31 +81,7 @@ const MuiButton = {
     padding: '10px 20px',
     boxShadow: 'none'
   },
-  containedPrimary: {
-    '&:hover': {
-      boxShadow: `0 4px 8px 0 ${Color(primary).fade(0.8)}`
-    }
-  },
-  outlined: {
-    padding: '10px 20px',
-    fontSize: '1rem',
-    borderColor: '#FFFFFF',
-    color: '#FFFFFF',
-    '&:hover': {
-      color: 'white',
-      backgroundColor: primary,
-      borderColor: primary,
-      boxShadow: `0 4px 8px 0 ${Color(primary).fade(0.8)}`
-    }
-  },
-  outlinedSecondary: {
-    borderColor: ThemeColors.secondary
-  },
-  outlinedPrimary: {
-    borderColor: ThemeColors.primary
-  },
-  containedSizeLarge: MuiButtonLargeSize,
-  outlinedSizeLarge: MuiButtonLargeSize
+
 };
 
 const MuiIconButton = {
@@ -453,14 +429,6 @@ export const AppStyles = makeStyles(() => ({
   },
   lowPriorityChip: {
     backgroundColor: '#E6BB2E !important'
-  },
-  playStoreButton: {
-    display: 'block',
-    width: 190,
-    backgroundImage: 'none',
-    backgroundColor: '#3F3F4E',
-    borderRadius: '0.4rem',
-    boxShadow: '0rem 0.3rem 0.7rem rgba(0, 0, 0, 0.15)'
   },
   dangerButton: {
     color: '#FFFFFF',

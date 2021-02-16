@@ -8,9 +8,13 @@ import {
     Paper,
     Typography
 } from '@material-ui/core';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 
-import { AuthContext } from '../contexts';
+import { OrderContext } from '../contexts';
 import logo from "../assets/logo.svg";
+import CONSTANTS from "../config/constants";
+
+const { Pizzas } = CONSTANTS;
 
 // --------------------------------------------------------------------
 // STYLES: makeStyles must be outside of functional component
@@ -29,6 +33,14 @@ const useStyles = makeStyles((theme) => ({
             marginRight: 'auto',
         },*/
     },
+    pizzaImages: {
+        width: '100%',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center center',
+        paddingTop: '100%',
+        margin: '15px 0px'
+    },
     paper: {
         marginTop: theme.spacing(3),
         marginBottom: theme.spacing(3),
@@ -38,6 +50,7 @@ const useStyles = makeStyles((theme) => ({
             marginBottom: theme.spacing(6),
             padding: theme.spacing(3),
         },
+        backgroundColor: '#121515',
         maxWidth: '350px'
     },
     stepper: {
@@ -47,78 +60,59 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         justifyContent: 'flex-end',
     },
-    button: {
-        marginTop: theme.spacing(3),
-        marginLeft: theme.spacing(1),
-    },
     pizzaImage: {
         height: '100%',
         width: '100%',
-        objectFit: 'contain'
+        objectFit: 'contain',
+        margin: '10 0',
+    },
+    customTypography: {
+        fontFamily: '"Josefin Sans"',
+        color: 'white',
+    },
+    pizzaDescription: {
+        color: 'white',
+        marginBottom: '5px'
     }
 }));
 
-
-// TODO add this to a context
-const pizzas = [
-    {
-        id: 'pythonciutto',
-        name: 'Pythonciutto',
-        description: 'For the adventurous, strongly typed Prosciutto pizza with',
-        image: '/images/pizza-prosciutto.jpg'
-    },
-    {
-        id: 'javarita',
-        name: 'Javarita',
-        description: 'Not a simple margarita strongly cheese typed cdjsc jdsn',
-        image: '/images/pizza-margherita.jpg'
-    },
-    {
-        id: 'c++bonara',
-        name: 'C++bonara',
-        description: 'For the classic, strongly cheese typedcshdbsbd  cjsdhs ',
-        image: '/images/pizza-carbonara.jpg'
-    },
-    {
-        id: 'diavolajs',
-        name: 'DiavolaJS',
-        description: 'For the adventurous and curious, a diavola',
-        image: '/images/pizza-diavola.jpg'
-    }
-];
-
 const PizzaList = () => {
     const classes = useStyles();
-    const { currentOrder, removeFromOrder, addToOrder } = useContext(AuthContext);
+    const { currentOrder, removeFromOrder, addToOrder } = useContext(OrderContext);
     const addPizzaToCart = (addPizza, pizzaId) => {
         addPizza ? addToOrder(pizzaId) : removeFromOrder(pizzaId);
-    }
-    const pizzaComponents = pizzas.map((pizza) => {
+    };   
+    const pizzaComponents = Pizzas.map((pizza) => {
         const inCart = currentOrder.indexOf(pizza.id) > -1;
         return (
-            <Paper className={classes.paper}>
-                <Typography component="h1" variant="h4" align="center">
+            <Grid item xs={3}>
+            <Paper className={classes.paper} elevation={3}>
+                <Typography component="h1" variant="h4" align="center" className={classes.customTypography}>
                 { pizza.name }
                 </Typography>
-                <div style={{ maxHeight: '200px' }}>
-                    <img className={classes.pizzaImage} src={pizza.image} />
-                </div>
-                <Typography > {pizza.description} </Typography>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => addPizzaToCart(!inCart, pizza.id)}
-                    className={classes.button}
-                    >
-                    {!inCart ? 'Add to cart' : 'Remove from cart'}
-                </Button>
+                <Grid className={classes.pizzaImages} style={{ backgroundImage: `url(${pizza.image})`}}>
+                </Grid>
+                <Grid style={{ minHeight: '70px' }}>
+                    <Typography className={classes.pizzaDescription}> {pizza.description} </Typography>
+                </Grid>
+                <Grid style={{ textAlign: 'center' }}>
+                    <Button
+                        variant="contained"
+                        onClick={() => addPizzaToCart(!inCart, pizza.id)}
+                        className={classes.button}
+                        disableRipple
+                        >
+                        {!inCart ? 'Add to cart' : 'Remove from cart'}
+                    </Button>
+                </Grid>
             </Paper>
+        </Grid>
         );
     });
     return (
-    <div style={{ display: 'flex', justifyContent: 'space-around'}}> 
+    <Grid container spacing={3}> 
         {pizzaComponents}
-    </div>
+    </Grid>
     );
 };
 
@@ -126,33 +120,16 @@ const PizzaList = () => {
 // MAIN COMPONENT
 export default function Home({location, match, history }) {
     const classes = useStyles();
-    const { currentOrder } = useContext(AuthContext);
-    /*
-    const {
-        user,
-        isAuthenticated,
-        loginWithRedirect,
-        logout,
-    } = useAuth0();
-    */
-    const isAuthenticated = false;
-    const user = {};
-    const loginWithRedirect = () => {};
-    
+    const { currentOrder } = useContext(OrderContext);
     return (
         <>
             <Container maxWidth="lg" className={classes.container}>
                 <Grid container spacing={3}>
-                    <Grid item xs={12}>
-
-                    </Grid>
-
-                    <Typography component="h1" variant="h4" align="center">
-                        Pizzeria
-                    </Typography>
+                    
                     <Grid item xs={12}>
                         <PizzaList/>
-
+                    </Grid>
+                    <Grid item xs={12} style={{ textAlign: 'center' }}>
                         {currentOrder && currentOrder.length > 0 &&
 
                             <Button
@@ -160,6 +137,7 @@ export default function Home({location, match, history }) {
                                 color="primary"
                                 onClick={() => {history.push('/checkout/')}}
                                 className={classes.button}
+                                startIcon={<ShoppingCartIcon/>}
                             >
                                 Checkout
                             </Button>

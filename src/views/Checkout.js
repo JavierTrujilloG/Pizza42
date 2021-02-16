@@ -14,20 +14,27 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Link
 } from '@material-ui/core';
+import LocalPizzaIcon from '@material-ui/icons/LocalPizza';
 import { useAuth0 } from "@auth0/auth0-react";
 
 import { makeStyles } from '@material-ui/core/styles';
-import { AuthContext } from '../contexts';
+import { OrderContext } from '../contexts';
 import { PizzaService } from '../services';
+import { useHistory } from "react-router-dom";
 import { CustomBreadCrumb } from '../components';
 import { AppStyles } from '../config/themes';
+import CONSTANTS from "../config/constants";
 import { getConfig } from "../config.js";
 const config = getConfig();
 
-
-// import { useAuth0 } from "@auth0/auth0-react"; 
+const { Pizzas } = CONSTANTS;
 
 const useStyles = makeStyles((theme) => ({
     layout: {
@@ -63,33 +70,26 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-
-// TODO add preferences: Extra cheesy, Big groot, Cutted
-const CustomerDetailsForm = ({ user }) => {
+const CustomerDetailsForm = ({ user, newAddress, setNewAddress }) => {
     const STYLES = AppStyles();
-    const [email, setEmail] = useState(user.email); // TODO this wil probably need to go up
-    const [address, setAddress] = useState(user.address);
-    console.log('EEE', user);
     return (
-        <>
-            <InputLabel htmlFor="email" className={[STYLES.textWhite]}>Email</InputLabel>
+        <form>
             <TextField
                 value={user.email}
-                onInput={(e) => setEmail(e.target.value)}
+                label="Email"
                 variant="outlined"
                 margin="normal"
-                required
+                disabled
                 fullWidth
                 id="user-email"
                 name="email"
                 autoComplete="email"
-                autoFocus
             />
-            <InputLabel htmlFor="address" className={[STYLES.textWhite]}>Address</InputLabel>
             <TextField
-                value={address}
-                onInput={(e) => setAddress(e.target.value)}
+                value={newAddress}
+                onInput={(e) => setNewAddress(e.target.value)}
                 variant="outlined"
+                label="Address"
                 margin="normal"
                 required
                 fullWidth
@@ -98,7 +98,7 @@ const CustomerDetailsForm = ({ user }) => {
                 autoComplete="address"
                 autoFocus
             />
-        </>
+        </form>
     );
 
 };
@@ -127,8 +127,10 @@ export default function Checkout({location, match }) {
     const STYLES = AppStyles();
     const [activeStep, setActiveStep] = useState(0);
     const [showVerifyModal, setShowVerifyModal] = useState(false);
+    const [newOrderId, setNewOrderId] = useState(null);
     const [APIerror, setAPIError] = useState(null);
-    const { currentOrder, setCurrentOrder } = useContext(AuthContext);
+    const { currentOrder, resetCurrentOrder } = useContext(OrderContext);
+    const history = useHistory();
 
     const consentRequired = APIerror === "consent_required";
     const consentAndLoginRequired = APIerror === "login_required";
@@ -142,24 +144,30 @@ export default function Checkout({location, match }) {
         getAccessTokenWithPopup
     } = useAuth0();
 
-    console.log(isAuthenticated, user);
+    // Enrich user profile with address information
+    const [newAddress, setNewAddress] = useState((user && user.address));
+    const nextBtnDisabled = activeStep === 1 && !(newAddress && newAddress !== '');
+
     const emailVerified = true;
 
-    const resendVerificationEmail = async () => {
-        // This will only be need for users logged via Database connection
-        // TODO await PizzaService.resendEmail(currentOrder, token);
-    };
     const accessTokenOptions = {
-                audience: config.audience,
-                scope: 'create:order',
-            };
+        audience: config.audience,
+        scope: 'create:order',
+    };
     const createOrder = async () => {
         let res = true;
         try {
             const token = await getAccessTokenSilently(accessTokenOptions);
-            await PizzaService.createOrder(currentOrder, token);
+            const orderRes = await PizzaService.createOrder({ order: currentOrder, address: newAddress }, token);
+            if (!orderRes || !orderRes.success) {
+                alert(orderRes.error);
+                res = false;
+            }
+            setNewOrderId(orderRes.orderId);
+            resetCurrentOrder([]);
         } catch(error) {
             setAPIError(error.error);
+            res = false;
         }
         return res;
     }
@@ -184,35 +192,22 @@ export default function Checkout({location, match }) {
 
     const goNextStep = async () => {
         if(activeStep === 1) {
-            // TODO Check both fields are entered
-            
-
-            // Before proceeding to create order we need to double check we have the appropiate access token
             if (!isAuthenticated) {
                 // Unlikely this occurs
                 await loginWithRedirect();
             }
+
+            // Check that the user has email address verified. This is always going to be the case
+            // using Google as social identity provider
             if (!user.email_verified) {
                 setShowVerifyModal(true);
                 return;
             }
-            // Progressive Profiling: check if we can enrich user profile with new infor
-            // If user.address !== newAddress ...
-
-            /* TODO do we need consent first?
-            const {
-                getAccessTokenSilently
-              } = useAuth0();
-              */
-            const token = 'dummy';//await getAccessTokenSilently();
             
             const res = await createOrder();
-            // TODO
-            return;
             if (!res) {
                 return;
             }
-            
         }
         setActiveStep(activeStep + 1);
     };
@@ -222,11 +217,32 @@ export default function Checkout({location, match }) {
                 return (
                     <>
                         <Typography variant="h6" gutterBottom>
-                            Your order
+                            Your order 
                         </Typography>
                         <Grid container spacing={3}>
                             <Grid item xs={12} sm={6}>
-                                {currentOrder}
+                                {currentOrder && currentOrder.length > 0 ? (
+                                    <List>
+                                        {currentOrder.map((pizzaId) => (
+                                            <ListItem>
+                                                <ListItemIcon>
+                                                    <LocalPizzaIcon style={{ color: "#3083ff" }} />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={Pizzas.find(pizza => pizza.id === pizzaId).name}
+                                                />
+
+                                                </ListItem>
+                                        ))}
+                                    </List>
+                                )
+                                :
+                                (
+                                    <Typography variant="body1" gutterBottom>
+                                        Order empty
+                                    </Typography>
+                                )
+                                }
                             </Grid>
                         </Grid>
                     </>
@@ -240,7 +256,7 @@ export default function Checkout({location, match }) {
                         <Grid container spacing={3}>
                             <Grid item xs={12} sm={6}>
                                 {isAuthenticated ?
-                                    <CustomerDetailsForm user={user}/>
+                                    <CustomerDetailsForm user={user} setNewAddress={setNewAddress}/>
                                     :
                                     <LoginBox loginWithRedirect={loginWithRedirect}/>
                                 }
@@ -256,8 +272,14 @@ export default function Checkout({location, match }) {
                         </Typography>
                         <Grid container spacing={3}>
                             <Grid item xs={12} sm={6}>
-                                <Typography> Sit and relax! You'll receive your order in 30 min </Typography>
-                                <Typography> If you would like to view your orders click here </Typography>
+                                <Typography> {`Congratulations! You'll receive your order in 30 min. This is your order ID: ${newOrderId}`} </Typography>
+                                <Typography> You can view all your orders on your profile page </Typography>
+                                <Button
+                                    onClick={() => history.push('/profile')}
+                                    className={classes.button}
+                                >
+                                    See orders
+                                </Button>
                             </Grid>
                         </Grid>
                 </>
@@ -270,7 +292,6 @@ export default function Checkout({location, match }) {
     return (
         <>
             <main className={classes.layout}>
-                <CustomBreadCrumb id="Profile"/>
                 <Paper className={classes.paper}>
                     <Typography component="h1" variant="h4" align="center">
                         Checkout
@@ -294,7 +315,16 @@ export default function Checkout({location, match }) {
                             <>
                                 {getStepContent(activeStep)}
                                 <div className={classes.buttons}>
-                                    {activeStep !== 0 && (
+                                    {activeStep === 0 ? (
+                                        <Button
+                                            onClick={() => history.push('/home')}
+                                            className={classes.button}
+                                        >
+                                            Edit my Order
+                                        </Button>
+                                    )
+                                        :
+                                    (
                                         <Button
                                             onClick={() => setActiveStep(activeStep - 1)}
                                             className={classes.button}
@@ -302,14 +332,17 @@ export default function Checkout({location, match }) {
                                             Back
                                         </Button>
                                     )}
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={goNextStep}
-                                        className={classes.button}
-                                    >
-                                        {activeStep === steps.length - 1 ? 'Thanks' : 'Next'}
-                                    </Button>
+                                    {currentOrder && currentOrder.length > 0 && activeStep < steps.length  &&
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={goNextStep}
+                                            className={classes.button}
+                                            disabled={nextBtnDisabled}
+                                        >
+                                            Next
+                                        </Button>
+                                    }
                                 </div>
                             </>
                         )
@@ -322,13 +355,11 @@ export default function Checkout({location, match }) {
                     <DialogContent>
                         <>
                             <Typography>Almost there! We kindly ask you to verify your email address before you can order your pizzas. </Typography>
-                            <Typography>If you don't find the verification email we can resend it to you </Typography>
                         </>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={resendVerificationEmail}>Please resend</Button>
                         <Button color="primary" onClick={() => setShowVerifyModal(false)}>
-                            I got it
+                            Sure!
                         </Button>
                     </DialogActions>
                 </Dialog>

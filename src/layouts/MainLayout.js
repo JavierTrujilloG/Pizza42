@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme) => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
+        backgroundColor: 'black'
     },
     appBarShift: {
         marginLeft: drawerWidth,
@@ -91,25 +92,22 @@ const useStyles = makeStyles((theme) => ({
 export default function PrivateLayout({ children }) {
     const classes = useStyles();
     const STYLES = AppStyles();
-    const [open, setOpen] = React.useState(false);
     const {
         user,
         isAuthenticated,
         loginWithRedirect,
         logout,
     } = useAuth0();
-    console.log(user, isAuthenticated);
     const history = useHistory();
 
     return (
         <div className={classes.root}>
-            <AppBar position="absolute" color="default" className={clsx(classes.appBar, open && classes.appBarShift)}>
+            <AppBar position="absolute" color="default" className={clsx(classes.appBar)}>
                 <Toolbar className={classes.toolbar}>
                     <Box className={STYLES.fullWidth} display="flex" flexDirection="row" alignItems="center" >
-                        <Logo width={150} />
-                        <Box px={2}>
-                        <Typography variant="h6" className={[STYLES.textPrimary]}>Pizza 42</Typography>
-                        </Box>
+                        
+                        <Logo width={90} linkToHome/>
+                        
                     </Box>
 
                     {isAuthenticated ?
