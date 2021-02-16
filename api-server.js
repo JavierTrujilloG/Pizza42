@@ -16,9 +16,9 @@ const authConfig = require("./src/auth_config.json");
 const app = express();
 app.use(express.json());
 
-const port = process.env.API_PORT || 3001;
-const appPort = process.env.SERVER_PORT || 3000;
-const appOrigin = authConfig.appOrigin || `http://localhost:${appPort}`;
+const port = process.env.PORT || 3001;
+//const appPort = process.env.SERVER_PORT || 3000;
+//const appOrigin = authConfig.appOrigin || `http://localhost:${appPort}`;
 
 if (
   !authConfig.domain ||
@@ -41,7 +41,7 @@ const auth0 = new ManagementClient({
 
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(cors({ origin: appOrigin }));
+app.use(cors());
 app.use(express.static(join(__dirname, "build")));
 
 const checkJwt = jwt({
