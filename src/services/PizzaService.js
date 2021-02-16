@@ -25,7 +25,7 @@ export default class PizzaService {
                 },
                 data,
             });
-            return response;
+            return response.data;
         } catch (err) {
             if (err.response) {
                 throw new Error(err.data.message)

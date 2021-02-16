@@ -19,7 +19,8 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Link
+    Link,
+    Box
 } from '@material-ui/core';
 import LocalPizzaIcon from '@material-ui/icons/LocalPizza';
 import { useAuth0 } from "@auth0/auth0-react";
@@ -125,7 +126,7 @@ const steps = ['Order details', 'Customer Information', 'Order Completed!'];
 export default function Checkout({location, match }) {
     const classes = useStyles();
     const STYLES = AppStyles();
-    const [activeStep, setActiveStep] = useState(0);
+    const [activeStep, setActiveStep] = useState(2);
     const [showVerifyModal, setShowVerifyModal] = useState(false);
     const [newOrderId, setNewOrderId] = useState(null);
     const [APIerror, setAPIError] = useState(null);
@@ -205,6 +206,7 @@ export default function Checkout({location, match }) {
             }
             
             const res = await createOrder();
+            console.log(res);
             if (!res) {
                 return;
             }
@@ -220,7 +222,7 @@ export default function Checkout({location, match }) {
                             Your order 
                         </Typography>
                         <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12}>
                                 {currentOrder && currentOrder.length > 0 ? (
                                     <List>
                                         {currentOrder.map((pizzaId) => (
@@ -254,7 +256,7 @@ export default function Checkout({location, match }) {
                             Customer information
                         </Typography>
                         <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid item xs={12}>
                                 {isAuthenticated ?
                                     <CustomerDetailsForm user={user} setNewAddress={setNewAddress}/>
                                     :
@@ -271,12 +273,17 @@ export default function Checkout({location, match }) {
                             Order Completed
                         </Typography>
                         <Grid container spacing={3}>
-                            <Grid item xs={12} sm={6}>
-                                <Typography> {`Congratulations! You'll receive your order in 30 min. This is your order ID: ${newOrderId}`} </Typography>
+                            <Grid item xs={12}>
+                                <Typography> Congratulations! You'll receive your order in 30 min. </Typography>
+                                <br/>
+                                <Typography> This is your order ID: <Box fontWeight="fontWeightBold" style={{display: 'inline'}}> {`${newOrderId}`}  </Box> </Typography>
+                                <br/>
                                 <Typography> You can view all your orders on your profile page </Typography>
                                 <Button
                                     onClick={() => history.push('/profile')}
                                     className={classes.button}
+                                    variant="contained"
+                                    color="primary"
                                 >
                                     See orders
                                 </Button>
@@ -304,49 +311,37 @@ export default function Checkout({location, match }) {
                         ))}
                     </Stepper>
                     <>
-                        {activeStep === steps.length - 1 ? (
-                            <>
-                                <Button>
-                                    Thanks!
+                        {getStepContent(activeStep)}
+                        <div className={classes.buttons}>
+                            {activeStep === 0 ? (
+                                <Button
+                                    onClick={() => history.push('/home')}
+                                    className={classes.button}
+                                >
+                                    Edit my Order
                                 </Button>
-                            </>
-
-                        ) : (
-                            <>
-                                {getStepContent(activeStep)}
-                                <div className={classes.buttons}>
-                                    {activeStep === 0 ? (
-                                        <Button
-                                            onClick={() => history.push('/home')}
-                                            className={classes.button}
-                                        >
-                                            Edit my Order
-                                        </Button>
-                                    )
-                                        :
-                                    (
-                                        <Button
-                                            onClick={() => setActiveStep(activeStep - 1)}
-                                            className={classes.button}
-                                        >
-                                            Back
-                                        </Button>
-                                    )}
-                                    {currentOrder && currentOrder.length > 0 && activeStep < steps.length  &&
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={goNextStep}
-                                            className={classes.button}
-                                            disabled={nextBtnDisabled}
-                                        >
-                                            Next
-                                        </Button>
-                                    }
-                                </div>
-                            </>
-                        )
-                        }
+                            )
+                                :
+                            (activeStep !== steps.length -1 &&
+                                <Button
+                                    onClick={() => setActiveStep(activeStep - 1)}
+                                    className={classes.button}
+                                >
+                                    Back
+                                </Button>
+                            )}
+                            {currentOrder && currentOrder.length > 0 && activeStep < steps.length  &&
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={goNextStep}
+                                    className={classes.button}
+                                    disabled={nextBtnDisabled}
+                                >
+                                    Next
+                                </Button>
+                            }
+                        </div>
                     </>
                 </Paper>
                 {/* EMAIL VERIFICATION DIALOG */}

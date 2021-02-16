@@ -7,6 +7,10 @@ const jwksRsa = require("jwks-rsa");
 const jwtAuthz = require('express-jwt-authz');
 const ManagementClient = require('auth0').ManagementClient;
 
+require('dotenv').config();
+
+console.log(process.env);
+
 const { createId } = require("./src/utils/RandomGenerator");
 const authConfig = require("./src/auth_config.json");
 
@@ -32,8 +36,8 @@ if (
 // Get access token to interact with Management API
 const auth0 = new ManagementClient({
   domain: authConfig.domain,
-  clientId: authConfig.backend_clientId,
-  clientSecret: authConfig.backend_clientSecret,
+  clientId: process.env.BACKEND_CLIENT_ID,
+  clientSecret: process.env.BACKEND_CLIENT_SECRET,
 });
 
 app.use(morgan("dev"));

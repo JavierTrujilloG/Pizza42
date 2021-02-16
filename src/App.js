@@ -36,7 +36,7 @@ function App() {
             localStorage.setItem('currentOrder', JSON.stringify(tempArr));
             setCurrentOrder(tempArr);
         },
-        resetCurrenOrder: (newOrder) => {
+        resetCurrentOrder: (newOrder) => {
             localStorage.setItem('currentOrder', JSON.stringify(newOrder));
             setCurrentOrder(newOrder);
         }
