@@ -263,7 +263,7 @@ export default function Checkout() {
                                 {isAuthenticated ?
                                     <CustomerDetailsForm user={user} newAddress={newAddress} setNewAddress={setNewAddress}/>
                                     :
-                                    <LoginBox loginWithRedirect={loginWithRedirect}/>
+                                    <LoginBox loginWithRedirect={() => loginWithRedirect({ returnTo: window.location.origin })}/>
                                 }
                             </Grid>
                         </Grid>
