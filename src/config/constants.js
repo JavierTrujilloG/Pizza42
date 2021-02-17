@@ -8,25 +8,25 @@ const CONSTANTS = {
         {
             id: 'pythonciutto',
             name: 'Pythonciutto',
-            description: 'For the adventurous, strongly typed Prosciutto pizza withcsdcsdcs d s cd scds ',
+            description: 'Interpreted, high-level Prosciutto pizza',
             image: '/images/pizza-prosciutto.jpg'
         },
         {
             id: 'javarita',
             name: 'Javarita',
-            description: 'Not a simple margarita strongly cheese typed cdjsc jdsn',
+            description: 'Statically typed and cheesy-compiled, not a simple Margarita',
             image: '/images/pizza-margherita.jpg'
         },
         {
             id: 'c++bonara',
             name: 'C++bonara',
-            description: 'For the classic, strongly cheese typedcshdbsbd  cjsdhs ',
+            description: 'The classic and performant fast-food Carbonara',
             image: '/images/pizza-carbonara.jpg'
         },
         {
             id: 'diavolajs',
             name: 'DiavolaJS',
-            description: 'For the adventurous and curious, a diavola',
+            description: 'For the adventurous, non-blockers, a real Diavola',
             image: '/images/pizza-diavola.jpg'
         }
     ]

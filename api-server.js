@@ -17,19 +17,24 @@ const app = express();
 app.use(express.json());
 
 const port = process.env.PORT || 3001;
-//const appPort = process.env.SERVER_PORT || 3000;
-//const appOrigin = authConfig.appOrigin || `http://localhost:${appPort}`;
+if (process.env.NODE_ENV === "development") {
+    const appPort = process.env.SERVER_PORT || 3000;
+    const appOrigin = authConfig.appOrigin || `http://localhost:${appPort}`;
+    app.use(cors({ origin: appOrigin }));
+} else {
+    app.use(cors({}));
+}
 
 if (
-  !authConfig.domain ||
-  !authConfig.audience ||
-  authConfig.audience === "YOUR_API_IDENTIFIER"
+    !authConfig.domain ||
+    !authConfig.audience ||
+    authConfig.audience === "YOUR_API_IDENTIFIER"
 ) {
-  console.log(
-    "Exiting: Please make sure that auth_config.json is in place and populated with valid domain and audience values"
-  );
+    console.log(
+        "Exiting: Please make sure that auth_config.json is in place and populated with valid domain and audience values"
+    );
 
-  process.exit();
+    process.exit();
 }
 
 // Get access token to interact with Management API
@@ -41,7 +46,6 @@ const auth0 = new ManagementClient({
 
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(cors());
 app.use(express.static(join(__dirname, "build")));
 
 const checkJwt = jwt({
@@ -59,12 +63,18 @@ const checkJwt = jwt({
 
 
 /*
- * https://auth0.github.io/node-auth0/module-management.ManagementClient.html#updateUser
+ * POST /api/order
+ *
+ * This protected endpoint allows a user to place a pizza order. To do that, the request must contain a valid access token with
+ * 'create:order' scope. Aside from placing an order, we are also storing the latest address information so as to enrich the user profile
+ * and provide a better checkout experience.
  */
 app.post("/api/order", checkJwt, jwtAuthz(['create:order']), async (req, res) => {
     try {
-        const { user } = req;
-        // User metadata is not included in token, request full user from Management API
+        const { user, body } = req;
+        // Get latest orders from Management API instead of sending them from the frontend as params of this request.
+        // The reason being that the token may not have the most up to date order information and that could compromise
+        // the order information integrity (e.g user places an order from another device)
         const fullUser = await auth0.getUser({ id: user.sub });
 
         // Create random order string
@@ -74,8 +84,16 @@ app.post("/api/order", checkJwt, jwtAuthz(['create:order']), async (req, res) =>
         const orders = fullUser.user_metadata.orders || [];
         orders.push(id);
 
+        const newUserMetadata = {
+            orders
+        };
+        // Update latest user address
+        if (body.address) {
+            newUserMetadata.address = body.address;
+        }
+
         // Update user_metada with new order history
-        await auth0.updateUserMetadata({ id: user.sub }, { orders });
+        await auth0.updateUserMetadata({ id: user.sub }, newUserMetadata);
         res.json({
             success: true,
             orderId: id

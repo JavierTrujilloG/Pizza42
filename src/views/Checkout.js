@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import _ from 'lodash';
 import {
-    InputLabel,
     TextField,
-    MenuItem,
     Typography,
     Button,
     Stepper,
@@ -19,8 +17,8 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Link,
-    Box
+    Box,
+    CircularProgress
 } from '@material-ui/core';
 import LocalPizzaIcon from '@material-ui/icons/LocalPizza';
 import { useAuth0 } from "@auth0/auth0-react";
@@ -29,7 +27,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { OrderContext } from '../contexts';
 import { PizzaService } from '../services';
 import { useHistory } from "react-router-dom";
-import { CustomBreadCrumb } from '../components';
 import { AppStyles } from '../config/themes';
 import CONSTANTS from "../config/constants";
 import { getConfig } from "../config.js";
@@ -57,6 +54,7 @@ const useStyles = makeStyles((theme) => ({
             marginBottom: theme.spacing(6),
             padding: theme.spacing(3),
         },
+        position: 'relative'
     },
     stepper: {
         padding: theme.spacing(3, 0, 5),
@@ -69,10 +67,15 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(3),
         marginLeft: theme.spacing(1),
     },
+    loading: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        zIndex: 100
+    }
 }));
 
 const CustomerDetailsForm = ({ user, newAddress, setNewAddress }) => {
-    const STYLES = AppStyles();
     return (
         <form>
             <TextField
@@ -123,12 +126,12 @@ const LoginBox = ({ loginWithRedirect }) => {
 
 const steps = ['Order details', 'Customer Information', 'Order Completed!'];
 
-export default function Checkout({location, match }) {
+export default function Checkout() {
     const classes = useStyles();
-    const STYLES = AppStyles();
     const [activeStep, setActiveStep] = useState(0);
     const [showVerifyModal, setShowVerifyModal] = useState(false);
     const [newOrderId, setNewOrderId] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [APIerror, setAPIError] = useState(null);
     const { currentOrder, resetCurrentOrder } = useContext(OrderContext);
     const history = useHistory();
@@ -145,21 +148,21 @@ export default function Checkout({location, match }) {
         getAccessTokenWithPopup
     } = useAuth0();
 
-    // Enrich user profile with address information
-    const [newAddress, setNewAddress] = useState((user && user.address));
+    // Enrich user profile with latest address information
+    const address = user && user[`${config['custom_claim_nm']}address`];
+    const [newAddress, setNewAddress] = useState((address));
     const nextBtnDisabled = activeStep === 1 && !(newAddress && newAddress !== '');
-
-    const emailVerified = true;
 
     const accessTokenOptions = {
         audience: config.audience,
         scope: 'create:order',
     };
     const createOrder = async () => {
+        setLoading(true);
         let res = true;
         try {
             const token = await getAccessTokenSilently(accessTokenOptions);
-            const orderRes = await PizzaService.createOrder({ order: currentOrder, address: newAddress }, token);
+            const orderRes = await PizzaService.createOrder({ address: newAddress }, token);
             if (!orderRes || !orderRes.success) {
                 alert(orderRes.error);
                 res = false;
@@ -170,6 +173,7 @@ export default function Checkout({location, match }) {
             setAPIError(error.error);
             res = false;
         }
+        setLoading(false);
         return res;
     }
 
@@ -206,7 +210,6 @@ export default function Checkout({location, match }) {
             }
             
             const res = await createOrder();
-            console.log(res);
             if (!res) {
                 return;
             }
@@ -258,7 +261,7 @@ export default function Checkout({location, match }) {
                         <Grid container spacing={3}>
                             <Grid item xs={12}>
                                 {isAuthenticated ?
-                                    <CustomerDetailsForm user={user} setNewAddress={setNewAddress}/>
+                                    <CustomerDetailsForm user={user} newAddress={newAddress} setNewAddress={setNewAddress}/>
                                     :
                                     <LoginBox loginWithRedirect={loginWithRedirect}/>
                                 }
@@ -295,11 +298,17 @@ export default function Checkout({location, match }) {
                 break;
         }
     };
-    
+
     return (
         <>
             <main className={classes.layout}>
-                <Paper className={classes.paper}>
+                <Paper className={classes.paper} style={loading ? { opacity: 0.9 } : {}}>
+                    {loading &&
+                        <CircularProgress
+                            size={34}
+                            className={classes.loading}
+                        />
+                    }
                     <Typography component="h1" variant="h4" align="center">
                         Checkout
                     </Typography>

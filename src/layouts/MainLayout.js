@@ -1,17 +1,10 @@
 import React, { useContext } from 'react';
 import clsx from 'clsx';
 import { 
-    Drawer, 
     AppBar, 
     Toolbar,
-    List,
-    Typography,
     Box,
-    Divider,
     IconButton,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
     Tooltip 
 } from '@material-ui/core';
 import { useHistory } from "react-router-dom";
@@ -28,11 +21,10 @@ const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
     root: {
         display: 'flex',
-        //backgroundColor: '#F7F7F7'
         backgroundImage: `url('/images/bg_pizzeria.jpg')`
     },
     toolbar: {
-        paddingRight: 24, // keep right padding when drawer closed
+        paddingRight: 24,
     },
     toolbarIcon: {
         backgroundColor: ThemeColors.primaryGradientDark,
@@ -49,14 +41,6 @@ const useStyles = makeStyles((theme) => ({
             duration: theme.transitions.duration.leavingScreen,
         }),
         backgroundColor: 'black'
-    },
-    appBarShift: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
     },
     menuButton: {
         marginRight: 36,
@@ -93,7 +77,6 @@ export default function PrivateLayout({ children }) {
     const classes = useStyles();
     const STYLES = AppStyles();
     const {
-        user,
         isAuthenticated,
         loginWithRedirect,
         logout,

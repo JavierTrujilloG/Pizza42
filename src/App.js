@@ -19,7 +19,7 @@ const NoMatch = () => (
 
 function App() {
     const existingOrder = JSON.parse(localStorage.getItem('currentOrder')) || [];
-    const [currentOrder, setCurrentOrder] = useState(existingOrder); // TODO Add some logic so that current order is overwritten with order in token if current  order is null
+    const [currentOrder, setCurrentOrder] = useState(existingOrder);
     /** @type {IOrderContext} */
     const orderContext = {
         addToOrder: (id) => {

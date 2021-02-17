@@ -1,30 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Redirect } from "react-router-dom";
 import {
     Typography,
     Container,
     Grid,
-    ListItemText,
-    InputLabel,
-    TextField,
     Paper,
     Tabs,
     Tab,
     Box,
-    Button,
-    List, 
     ListItem,
     IconButton,
     Link,
-    Tooltip
+    Tooltip,
+    List
 } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import { useHistory } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
-import { PizzaService } from '../services';
-import { CustomBreadCrumb } from '../components';
 import { AppStyles, ThemeColors } from '../config/themes';
 import { getConfig } from "../config.js";
 const config = getConfig();
@@ -91,24 +85,22 @@ const Profile = ({location, match }) => {
     const classes = useStyles();
     const { user, getAccessTokenSilently } = useAuth0();
     const history = useHistory();
-    console.log(user);
     const [currentTab, setCurrentTab] = useState(0);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
     };
 
-    const orders = user[config['custom_claim']];
+    // Get user_metadata info
+    const orders = user[`${config['custom_claim_nm']}orders`];
+    const address = user[`${config['custom_claim_nm']}address`];
 
-    /*
-    const updateProfileInfo = async () => {
-        const token = 'dummy';//await getAccessTokenSilently();
-        try {
-            await PizzaService.updateProfile({}, token); // TODO remove
-        } catch(err){
-            console.log(err);
+    useEffect(() => {
+        async function fetchMetadata() {
+            // Get latest information on orders and user address
+            await getAccessTokenSilently({ignoreCache: true});
         }
-    }
-    */
+        fetchMetadata();
+    }, []);
     
     const renderOrders = () => {
         if (!orders || orders.length < 0) {
@@ -144,7 +136,7 @@ const Profile = ({location, match }) => {
                                 Your profile
                             </Typography>
                             <Tooltip title="Home" aria-label="home">
-                                <IconButton color="inherit" onClick={() => history.push('/profile')} className={[STYLES.iconButtonWhiteFill]}>
+                                <IconButton color="inherit" onClick={() => history.push('/home')} className={[STYLES.iconButtonWhiteFill]}>
                                     <HomeIcon />
                                 </IconButton>
                             </Tooltip>
@@ -178,11 +170,17 @@ const Profile = ({location, match }) => {
                                                             <Typography style={{ marginBottom: '5px' }}>
                                                                 {user.name}
                                                             </Typography>
-                                                            <Typography>
+                                                            <Typography style={{ marginBottom: '25px' }}>
                                                                 <Link href={`mailto:${user.email}`}>
                                                                     {user.email}
                                                                 </Link>
                                                             </Typography>
+                                                            {address &&
+                                                                <Box fontStyle="italic" style={{display: 'inline'}}>                                                                  
+                                                                    {address}
+                                                                </Box>
+
+                                                                }
                                                     </Grid>
                                                     </Grid>
 
