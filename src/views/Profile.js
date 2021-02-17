@@ -5,26 +5,20 @@ import {
     Typography,
     Container,
     Grid,
-    ListItemText,
-    InputLabel,
-    TextField,
     Paper,
     Tabs,
     Tab,
     Box,
-    Button,
-    List, 
     ListItem,
     IconButton,
     Link,
-    Tooltip
+    Tooltip,
+    List
 } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import { useHistory } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
-import { PizzaService } from '../services';
-import { CustomBreadCrumb } from '../components';
 import { AppStyles, ThemeColors } from '../config/themes';
 import { getConfig } from "../config.js";
 const config = getConfig();

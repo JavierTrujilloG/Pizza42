@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import _ from 'lodash';
 import {
-    InputLabel,
     TextField,
-    MenuItem,
     Typography,
     Button,
     Stepper,
@@ -19,7 +17,6 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Link,
     Box,
     CircularProgress
 } from '@material-ui/core';
@@ -30,7 +27,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { OrderContext } from '../contexts';
 import { PizzaService } from '../services';
 import { useHistory } from "react-router-dom";
-import { CustomBreadCrumb } from '../components';
 import { AppStyles } from '../config/themes';
 import CONSTANTS from "../config/constants";
 import { getConfig } from "../config.js";
@@ -58,6 +54,7 @@ const useStyles = makeStyles((theme) => ({
             marginBottom: theme.spacing(6),
             padding: theme.spacing(3),
         },
+        position: 'relative'
     },
     stepper: {
         padding: theme.spacing(3, 0, 5),
@@ -79,7 +76,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const CustomerDetailsForm = ({ user, newAddress, setNewAddress }) => {
-    const STYLES = AppStyles();
     return (
         <form>
             <TextField
@@ -132,7 +128,6 @@ const steps = ['Order details', 'Customer Information', 'Order Completed!'];
 
 export default function Checkout() {
     const classes = useStyles();
-    const STYLES = AppStyles();
     const [activeStep, setActiveStep] = useState(0);
     const [showVerifyModal, setShowVerifyModal] = useState(false);
     const [newOrderId, setNewOrderId] = useState(null);
@@ -157,8 +152,6 @@ export default function Checkout() {
     const address = user && user[`${config['custom_claim_nm']}address`];
     const [newAddress, setNewAddress] = useState((address));
     const nextBtnDisabled = activeStep === 1 && !(newAddress && newAddress !== '');
-
-    const emailVerified = true;
 
     const accessTokenOptions = {
         audience: config.audience,
@@ -309,7 +302,7 @@ export default function Checkout() {
     return (
         <>
             <main className={classes.layout}>
-                <Paper className={classes.paper} style={loading ? { opacity: 0.7 } : {}}>
+                <Paper className={classes.paper} style={loading ? { opacity: 0.9 } : {}}>
                     {loading &&
                         <CircularProgress
                             size={34}
