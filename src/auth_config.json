@@ -3,5 +3,5 @@
   "audience": "https://pizza44/api",
   "app_scope": "create:order",
   "backend_scope": "read:users_app_metadata update:users_app_metadata read:users",
-  "custom_claim": "http://pizza44.com/orders"
+  "custom_claim_nm": "http://pizza44.com/"
 }

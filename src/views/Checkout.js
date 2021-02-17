@@ -145,8 +145,9 @@ export default function Checkout({location, match }) {
         getAccessTokenWithPopup
     } = useAuth0();
 
-    // Enrich user profile with address information
-    const [newAddress, setNewAddress] = useState((user && user.address));
+    // Enrich user profile with latest address information
+    const address = user[`${config['custom_claim_nm']}address`];
+    const [newAddress, setNewAddress] = useState((address));
     const nextBtnDisabled = activeStep === 1 && !(newAddress && newAddress !== '');
 
     const emailVerified = true;
@@ -159,7 +160,7 @@ export default function Checkout({location, match }) {
         let res = true;
         try {
             const token = await getAccessTokenSilently(accessTokenOptions);
-            const orderRes = await PizzaService.createOrder({ order: currentOrder, address: newAddress }, token);
+            const orderRes = await PizzaService.createOrder({ address: newAddress }, token);
             if (!orderRes || !orderRes.success) {
                 alert(orderRes.error);
                 res = false;
