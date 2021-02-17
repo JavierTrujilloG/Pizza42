@@ -81,7 +81,7 @@ app.post("/api/order", checkJwt, jwtAuthz(['create:order']), async (req, res) =>
         const id = `PIZZA44-${createId(7)}`;
 
         // Add id to existing orders array if any
-        const orders = fullUser.user_metadata.orders || [];
+        const orders = (fullUser.user_metadata && fullUser.user_metadata.orders) || [];
         orders.push(id);
 
         const newUserMetadata = {
