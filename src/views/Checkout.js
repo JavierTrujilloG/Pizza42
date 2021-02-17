@@ -20,7 +20,8 @@ import {
     ListItemIcon,
     ListItemText,
     Link,
-    Box
+    Box,
+    CircularProgress
 } from '@material-ui/core';
 import LocalPizzaIcon from '@material-ui/icons/LocalPizza';
 import { useAuth0 } from "@auth0/auth0-react";
@@ -69,6 +70,11 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(3),
         marginLeft: theme.spacing(1),
     },
+    loading: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%'
+    }
 }));
 
 const CustomerDetailsForm = ({ user, newAddress, setNewAddress }) => {
@@ -123,12 +129,13 @@ const LoginBox = ({ loginWithRedirect }) => {
 
 const steps = ['Order details', 'Customer Information', 'Order Completed!'];
 
-export default function Checkout({location, match }) {
+export default function Checkout() {
     const classes = useStyles();
     const STYLES = AppStyles();
     const [activeStep, setActiveStep] = useState(0);
     const [showVerifyModal, setShowVerifyModal] = useState(false);
     const [newOrderId, setNewOrderId] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [APIerror, setAPIError] = useState(null);
     const { currentOrder, resetCurrentOrder } = useContext(OrderContext);
     const history = useHistory();
@@ -146,7 +153,7 @@ export default function Checkout({location, match }) {
     } = useAuth0();
 
     // Enrich user profile with latest address information
-    const address = user[`${config['custom_claim_nm']}address`];
+    const address = user && user[`${config['custom_claim_nm']}address`];
     const [newAddress, setNewAddress] = useState((address));
     const nextBtnDisabled = activeStep === 1 && !(newAddress && newAddress !== '');
 
@@ -157,6 +164,7 @@ export default function Checkout({location, match }) {
         scope: 'create:order',
     };
     const createOrder = async () => {
+        setLoading(true);
         let res = true;
         try {
             const token = await getAccessTokenSilently(accessTokenOptions);
@@ -171,6 +179,7 @@ export default function Checkout({location, match }) {
             setAPIError(error.error);
             res = false;
         }
+        setLoading(false);
         return res;
     }
 
@@ -207,7 +216,6 @@ export default function Checkout({location, match }) {
             }
             
             const res = await createOrder();
-            console.log(res);
             if (!res) {
                 return;
             }
@@ -259,7 +267,7 @@ export default function Checkout({location, match }) {
                         <Grid container spacing={3}>
                             <Grid item xs={12}>
                                 {isAuthenticated ?
-                                    <CustomerDetailsForm user={user} setNewAddress={setNewAddress}/>
+                                    <CustomerDetailsForm user={user} newAddress={newAddress} setNewAddress={setNewAddress}/>
                                     :
                                     <LoginBox loginWithRedirect={loginWithRedirect}/>
                                 }
@@ -296,11 +304,17 @@ export default function Checkout({location, match }) {
                 break;
         }
     };
-    
+
     return (
         <>
             <main className={classes.layout}>
-                <Paper className={classes.paper}>
+                <Paper className={classes.paper} style={loading ? { opacity: 0.7 } : {}}>
+                    {loading &&
+                        <CircularProgress
+                            size={34}
+                            className={classes.loading}
+                        />
+                    }
                     <Typography component="h1" variant="h4" align="center">
                         Checkout
                     </Typography>
