@@ -101,14 +101,14 @@ export default function PrivateLayout({ children }) {
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title="Log Out" aria-label="log out">
-                                <IconButton color="inherit" onClick={logout} className={[STYLES.iconButtonWhiteFill]}>
+                                <IconButton color="inherit" onClick={() => logout({ returnTo: window.location.origin })} className={[STYLES.iconButtonWhiteFill]}>
                                     <ExitToAppIcon />
                                 </IconButton>
                             </Tooltip>
                         </>
                     :
                     <Tooltip title="Sign in" aria-label="log out">
-                            <IconButton color="inherit" onClick={loginWithRedirect} className={[STYLES.iconButtonWhiteFill]}>
+                            <IconButton color="inherit" onClick={() => loginWithRedirect({ returnTo: window.location.origin })} className={[STYLES.iconButtonWhiteFill]}>
                                 <VpnKeyIcon />
                             </IconButton>
                         </Tooltip>
